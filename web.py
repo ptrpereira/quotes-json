@@ -1,9 +1,23 @@
-from flask import Flask, jsonify, request
+from functools import wraps
+from flask import Flask, jsonify, request, make_response
 from bs4 import BeautifulSoup
 from urllib.request import urlopen, Request
 import os
 
 app = Flask(__name__)
+
+
+def add_response_headers(headers={}):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            resp = make_response(f(*args, **kwargs))
+            h = resp.headers
+            for header, value in headers.items():
+                h[header] = value
+            return resp
+        return decorated_function
+    return decorator
 
 @app.route('/api/v1/quotes', methods=['GET'])
 def quotes():
